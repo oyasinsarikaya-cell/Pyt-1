@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUTU DÜNYASI - Üretim Planlama</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-brand { 
+            font-weight: bold; 
+            color: #dc3545 !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-logo {
+            height: 35px;
+            width: auto;
+            border-radius: 4px;
+        }
+        .btn-primary { background-color: #2196F3; border-color: #2196F3; }
+        .btn-success { background-color: #4CAF50; border-color: #4CAF50; }
+        .btn-danger { background-color: #f44336; border-color: #f44336; }
+        .btn-warning { background-color: #FF9800; border-color: #FF9800; }
+        .btn-info { background-color: #9C27B0; border-color: #9C27B0; }
+        .btn-ana-sayfa {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        .btn-planlama {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+        .firma-bilgi { 
+            text-align: center; 
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px;
+            border: 2px solid #dee2e6;
+        }
+        .firma-logo {
+            max-height: 80px;
+            width: auto;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .table-responsive {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .section-title {
+            color: #2196F3;
+            border-bottom: 2px solid #2196F3;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .action-buttons {
+            white-space: nowrap;
+        }
+        .selected-row {
+            background-color: #e8f4fd !important;
+        }
+        .status-badge {
+            font-size: 0.85em;
+            padding: 4px 8px;
+        }
+        .search-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .editable-cell {
+            cursor: pointer;
+        }
+        .editable-cell:hover {
+            background-color: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/logo" alt="Kutu Dünyası" class="navbar-logo" onerror="this.style.display='none'">
+                <span>KUTU DÜNYASI</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Geri Dön Butonu -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-ana-sayfa" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left"></i> Ana Sayfaya Dön
+                </button>
+                <button class="btn btn-planlama" onclick="window.location.href='/urun-takip'">
+                    <i class="fas fa-clipboard-list"></i> Ürün Takip Formu
+                </button>
+            </div>
+        </div>
+
+        <!-- Firma Bilgisi -->
+        <div class="firma-bilgi">
+            <img src="/logo" alt="Kutu Dünyası" class="firma-logo" onerror="this.style.display='none'">
+            <h4 class="text-primary">KUTU DÜNYASI - ÜRETİM PLANLAMA</h4>
+            <p class="mb-1 text-muted">YUNUS EMRE MAH. 296. SK. NO: 6/2</p>
+            <p class="mb-1 text-muted">ESENYURT/İSTANBUL 34510</p>
+            <p class="mb-0 text-muted">0(212) 812 36 86 - 0(532) 233 39 96</p>
+        </div>
+
+        <h2 class="section-title">Üretim Planlama Tablosu</h2>
+
+        <!-- Arama ve Ekleme Bölümü -->
+        <div class="search-section">
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label">Kayıt Ara (Müşteri veya Ürün Adı)</label>
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Müşteri adı veya ürün adı girin...">
+                        <button class="btn btn-outline-primary" onclick="searchRecords()">
+                            <i class="fas fa-search"></i> Ara
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-success w-100" onclick="showKayitListesi()">
+                        <i class="fas fa-list"></i> Kayıtlardan Seç
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- İşlem Butonları -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-primary" onclick="addEmptyRow()">
+                    <i class="fas fa-plus"></i> Boş Satır Ekle
+                </button>
+                <button class="btn btn-success" onclick="saveProductionPlan()">
+                    <i class="fas fa-save"></i> Planı Kaydet
+                </button>
+                <button class="btn btn-info" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Excel'e Aktar
+                </button>
+                <button class="btn btn-warning" onclick="printTable()">
+                    <i class="fas fa-print"></i> Yazdır
+                </button>
+                <button class="btn btn-danger" onclick="clearTable()">
+                    <i class="fas fa-trash"></i> Tabloyu Temizle
+                </button>
+            </div>
+        </div>
+
+        <!-- Üretim Planlama Tablosu -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="productionTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="50">Sıra</th>
+                        <th>Müşteri Adı</th>
+                        <th>Ürün Adı</th>
+                        <th>Tabaka Adedi</th>
+                        <th>Renk</th>
+                        <th>Notlar</th>
+                        <th width="100">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="productionTableBody">
+                    <!-- Tablo boş başlayacak -->
+                    <tr id="emptyRow">
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            Tablo boş. Kayıtlardan seçmek için "Kayıtlardan Seç" butonuna tıklayın.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Toplam Bilgisi -->
+        <div class="alert alert-info mt-3">
+            <strong>Toplam Satır: <span id="totalRows">0</span></strong> | 
+            <strong>Toplam Tabaka: <span id="totalTabaka">0</span></strong>
+        </div>
+    </div>
+
+    <!-- Kayıt Listesi Modal -->
+    <div class="modal fade" id="kayitListModal" tabindex="-1" aria-labelledby="kayitListModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="kayitListModalLabel">
+                        <i class="fas fa-list"></i> KAYITLARDAN SEÇ
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Arama Çubuğu -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" id="modalSearchInput" class="form-control" placeholder="Müşteri veya ürün adı ara...">
+                                <button class="btn btn-outline-primary" onclick="searchInModal()">
+                                    <i class="fas fa-search"></i> Ara
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-success" onclick="selectAllInModal()">
+                                <i class="fas fa-check-double"></i> Tümünü Seç
+                            </button>
+                            <button class="btn btn-secondary" onclick="deselectAllInModal()">
+                                <i class="fas fa-times"></i> Seçimi Temizle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kayıt Listesi -->
+                    <div class="table-responsive" style="max-height: 50vh;">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-info">
+                                <tr>
+                                    <th width="50">Seç</th>
+                                    <th>Müşteri</th>
+                                    <th>Ürün Adı</th>
+                                    <th>Tabaka</th>
+                                    <th>Renk</th>
+                                    <th>Notlar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kayitListTableBody">
+                                <!-- Kayıtlar buraya eklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" onclick="addSelectedToTable()">Seçilenleri Ekle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let kayitListModal = new bootstrap.Modal(document.getElementById('kayitListModal'));
+        let selectedRecords = new Set();
+        let tableData = [];
+        let rowCounter = 1;
+
+        // Sayfa yüklendiğinde tabloyu hazırla
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCounters();
+        });
+
+        function showKayitListesi() {
+            // Veritabanından kayıtları getir
+            fetch('/api/simple-production-data')
+                .then(response => response.json())
+                .then(data => {
+                    renderKayitListesi(data);
+                    kayitListModal.show();
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    alert('Kayıtlar yüklenirken hata oluştu.');
+                });
+        }
+
+        function renderKayitListesi(records) {
+            const tbody = document.getElementById('kayitListTableBody');
+            tbody.innerHTML = '';
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Kayıt bulunamadı.</td></tr>';
+                return;
+            }
+            
+            records.forEach(record => {
+                const isSelected = selectedRecords.has(record.id);
+                const notlarKisa = record.notlar ? (record.notlar.length > 50 ? record.notlar.substring(0, 50) + '...' : record.notlar) : '';
+                
+                const row = `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="record-checkbox" value="${record.id}" ${isSelected ? 'checked' : ''} 
+                                   onchange="toggleRecordSelection(${record.id})">
+                        </td>
+                        <td>${record.musteri_adi || ''}</td>
+                        <td>${record.urun_adi || ''}</td>
+                        <td>${record.tabaka_adedi || ''}</td>
+                        <td>${record.renk_sayisi || ''} ${record.renk_bilgisi ? '(' + record.renk_bilgisi + ')' : ''}</td>
+                        <td title="${record.notlar || ''}">${notlarKisa}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function toggleRecordSelection(id) {
+            if (selectedRecords.has(id)) {
+                selectedRecords.delete(id);
+            } else {
+                selectedRecords.add(id);
+            }
+        }
+
+        function selectAllInModal() {
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                selectedRecords.add(parseInt(checkbox.value));
+            });
+        }
+
+        function deselectAllInModal() {
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedRecords.clear();
+        }
+
+        function searchInModal() {
+            const query = document.getElementById('modalSearchInput').value.toLowerCase();
+            const rows = document.getElementById('kayitListTableBody').getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (cells.length > 1) {
+                    const musteriAdi = cells[1].textContent.toLowerCase();
+                    const urunAdi = cells[2].textContent.toLowerCase();
+                    
+                    if (musteriAdi.includes(query) || urunAdi.includes(query)) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function addSelectedToTable() {
+            if (selectedRecords.size === 0) {
+                alert('Lütfen eklemek için kayıt seçiniz.');
+                return;
+            }
+
+            // Seçilen kayıtları getir
+            const ids = Array.from(selectedRecords);
+            
+            fetch('/api/get-selected-records', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(response => response.json())
+            .then(records => {
+                // Boş satır mesajını kaldır
+                const emptyRow = document.getElementById('emptyRow');
+                if (emptyRow) {
+                    emptyRow.remove();
+                }
+                
+                // Kayıtları tabloya ekle
+                records.forEach(record => {
+                    addRowToTable(record);
+                });
+                
+                // Modal'ı kapat ve seçimleri temizle
+                kayitListModal.hide();
+                selectedRecords.clear();
+                
+                // Counters'ı güncelle
+                updateCounters();
+                
+                alert(`${records.length} kayıt tabloya eklendi.`);
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert('Kayıtlar eklenirken hata oluştu.');
+            });
+        }
+
+        function addRowToTable(record) {
+            const tbody = document.getElementById('productionTableBody');
+            
+            // Boş satır mesajını kaldır
+            const emptyRow = document.getElementById('emptyRow');
+            if (emptyRow) {
+                emptyRow.remove();
+            }
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rowCounter++}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)">${record.musteri_adi || ''}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)">${record.urun_adi || ''}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this); updateCounters()">${record.tabaka_adedi || ''}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)">${record.renk_sayisi || ''} ${record.renk_bilgisi ? '(' + record.renk_bilgisi + ')' : ''}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)">${record.notlar || ''}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-danger" onclick="deleteRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            
+            // Tablo verisine ekle
+            tableData.push({
+                musteri_adi: record.musteri_adi || '',
+                urun_adi: record.urun_adi || '',
+                tabaka_adedi: record.tabaka_adedi || '',
+                renk: record.renk_sayisi || '',
+                notlar: record.notlar || ''
+            });
+        }
+
+        function addEmptyRow() {
+            const tbody = document.getElementById('productionTableBody');
+            
+            // Boş satır mesajını kaldır
+            const emptyRow = document.getElementById('emptyRow');
+            if (emptyRow) {
+                emptyRow.remove();
+            }
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rowCounter++}</td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)"></td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)"></td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this); updateCounters()"></td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)"></td>
+                <td class="editable-cell" contenteditable="true" onblur="updateCellData(this)"></td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-danger" onclick="deleteRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            
+            // Tablo verisine ekle
+            tableData.push({
+                musteri_adi: '',
+                urun_adi: '',
+                tabaka_adedi: '',
+                renk: '',
+                notlar: ''
+            });
+        }
+
+        function updateCellData(cell) {
+            const rowIndex = cell.parentNode.rowIndex - 1; // Header'ı çıkar
+            const cellIndex = cell.cellIndex;
+            const value = cell.textContent.trim();
+            
+            if (rowIndex >= 0 && rowIndex < tableData.length) {
+                const rowData = tableData[rowIndex];
+                
+                switch(cellIndex) {
+                    case 1: rowData.musteri_adi = value; break;
+                    case 2: rowData.urun_adi = value; break;
+                    case 3: rowData.tabaka_adedi = value; break;
+                    case 4: rowData.renk = value; break;
+                    case 5: rowData.notlar = value; break;
+                }
+            }
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            const rowIndex = row.rowIndex - 1;
+            
+            if (confirm('Bu satırı silmek istediğinizden emin misiniz?')) {
+                row.remove();
+                
+                // Tablo verisinden kaldır
+                if (rowIndex >= 0 && rowIndex < tableData.length) {
+                    tableData.splice(rowIndex, 1);
+                }
+                
+                // Sıra numaralarını yeniden düzenle
+                renumberRows();
+                updateCounters();
+            }
+        }
+
+        function renumberRows() {
+            const rows = document.querySelectorAll('#productionTableBody tr');
+            rowCounter = 1;
+            
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = rowCounter++;
+            });
+        }
+
+        function updateCounters() {
+            const totalRows = tableData.length;
+            let totalTabaka = 0;
+            
+            tableData.forEach(row => {
+                const tabaka = parseInt(row.tabaka_adedi) || 0;
+                totalTabaka += tabaka;
+            });
+            
+            document.getElementById('totalRows').textContent = totalRows;
+            document.getElementById('totalTabaka').textContent = totalTabaka;
+            
+            // Eğer tablo boşsa boş satır mesajını göster
+            if (totalRows === 0) {
+                const tbody = document.getElementById('productionTableBody');
+                tbody.innerHTML = `
+                    <tr id="emptyRow">
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            Tablo boş. Kayıtlardan seçmek için "Kayıtlardan Seç" butonuna tıklayın.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function searchRecords() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                // Tüm satırları göster
+                const rows = document.querySelectorAll('#productionTableBody tr');
+                rows.forEach(row => {
+                    if (row.id !== 'emptyRow') {
+                        row.style.display = '';
+                    }
+                });
+                return;
+            }
+            
+            // Tablodaki satırları filtrele
+            const rows = document.querySelectorAll('#productionTableBody tr');
+            let foundCount = 0;
+            
+            rows.forEach(row => {
+                if (row.id !== 'emptyRow') {
+                    const cells = row.getElementsByTagName('td');
+                    let found = false;
+                    
+                    for (let i = 1; i < cells.length - 1; i++) { // İşlemler sütununu atla
+                        const cellText = cells[i].textContent.toLowerCase();
+                        if (cellText.includes(query)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    if (found) {
+                        row.style.display = '';
+                        foundCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+            
+            if (foundCount === 0) {
+                alert('Aranan kriterlere uygun kayıt bulunamadı.');
+            }
+        }
+
+        function saveProductionPlan() {
+            if (tableData.length === 0) {
+                alert('Kaydedilecek veri bulunamadı.');
+                return;
+            }
+            
+            const planAdi = prompt('Plan için bir ad girin:', `Üretim_Plan_${new Date().toLocaleDateString('tr-TR')}`);
+            
+            if (!planAdi) return;
+            
+            const planData = {
+                plan_adi: planAdi,
+                tarih: new Date().toLocaleDateString('tr-TR'),
+                veriler: tableData
+            };
+            
+            fetch('/api/save-production-plan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(planData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Plan başarıyla kaydedildi!');
+                } else {
+                    alert('Plan kaydedilirken hata oluştu: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert('Plan kaydedilirken hata oluştu.');
+            });
+        }
+
+        function exportToExcel() {
+            if (tableData.length === 0) {
+                alert('Excel\'e aktarılacak veri bulunamadı.');
+                return;
+            }
+            
+            // Basit bir CSV oluştur
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Başlıklar
+            csvContent += "Sıra,Müşteri Adı,Ürün Adı,Tabaka Adedi,Renk,Notlar\n";
+            
+            // Veriler
+            tableData.forEach((row, index) => {
+                const rowData = [
+                    index + 1,
+                    `"${row.musteri_adi.replace(/"/g, '""')}"`,
+                    `"${row.urun_adi.replace(/"/g, '""')}"`,
+                    row.tabaka_adedi,
+                    `"${row.renk.replace(/"/g, '""')}"`,
+                    `"${row.notlar.replace(/"/g, '""')}"`
+                ];
+                csvContent += rowData.join(",") + "\n";
+            });
+            
+            // Dosyayı indir
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Uretim_Plan_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function printTable() {
+            window.print();
+        }
+
+        function clearTable() {
+            if (tableData.length === 0) {
+                return;
+            }
+            
+            if (confirm('Tüm tablo verilerini silmek istediğinizden emin misiniz?')) {
+                tableData = [];
+                const tbody = document.getElementById('productionTableBody');
+                tbody.innerHTML = `
+                    <tr id="emptyRow">
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            Tablo boş. Kayıtlardan seçmek için "Kayıtlardan Seç" butonuna tıklayın.
+                        </td>
+                    </tr>
+                `;
+                rowCounter = 1;
+                updateCounters();
+            }
+        }
+    </script>
+</body>
+</html>
